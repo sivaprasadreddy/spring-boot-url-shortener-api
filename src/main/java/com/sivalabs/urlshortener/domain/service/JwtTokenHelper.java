@@ -1,7 +1,8 @@
-package com.sivalabs.urlshortener.security;
+package com.sivalabs.urlshortener.domain.service;
 
 import com.sivalabs.urlshortener.ApplicationProperties;
 import com.sivalabs.urlshortener.domain.entity.User;
+import com.sivalabs.urlshortener.domain.model.JwtToken;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;

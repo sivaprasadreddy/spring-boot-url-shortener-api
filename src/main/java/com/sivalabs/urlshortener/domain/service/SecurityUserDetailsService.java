@@ -1,4 +1,4 @@
-package com.sivalabs.urlshortener.security;
+package com.sivalabs.urlshortener.domain.service;
 
 import com.sivalabs.urlshortener.domain.entity.User;
 import com.sivalabs.urlshortener.domain.repository.UserRepository;

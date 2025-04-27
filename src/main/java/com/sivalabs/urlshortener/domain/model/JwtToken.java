@@ -1,4 +1,4 @@
-package com.sivalabs.urlshortener.security;
+package com.sivalabs.urlshortener.domain.model;
 
 import java.time.Instant;
 

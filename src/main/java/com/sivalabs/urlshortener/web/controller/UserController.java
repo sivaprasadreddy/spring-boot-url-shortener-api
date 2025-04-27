@@ -3,7 +3,7 @@ package com.sivalabs.urlshortener.web.controller;
 import com.sivalabs.urlshortener.domain.model.CreateUserCmd;
 import com.sivalabs.urlshortener.domain.model.Role;
 import com.sivalabs.urlshortener.domain.service.UserService;
-import com.sivalabs.urlshortener.security.JwtTokenHelper;
+import com.sivalabs.urlshortener.domain.service.JwtTokenHelper;
 import com.sivalabs.urlshortener.web.dto.LoginRequest;
 import com.sivalabs.urlshortener.web.dto.LoginResponse;
 import com.sivalabs.urlshortener.web.dto.RegistrationRequest;
