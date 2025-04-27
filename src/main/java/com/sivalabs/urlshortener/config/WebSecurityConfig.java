@@ -28,7 +28,7 @@ class WebSecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.securityMatcher("/api/**");
         http.csrf(CsrfConfigurer::disable);
         http.cors(CorsConfigurer::disable);
