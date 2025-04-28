@@ -29,7 +29,7 @@ class WebSecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.securityMatcher("/api/**");
+        http.securityMatcher("/api/**", "/s/*");
         http.csrf(CsrfConfigurer::disable);
         http.cors(CorsConfigurer::disable);
 
@@ -41,7 +41,7 @@ class WebSecurityConfig {
                 .permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users")
                 .permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/short-urls", "/api/short-urls/*")
+                .requestMatchers(HttpMethod.GET, "/api/short-urls", "/api/short-urls/*", "/s/*")
                 .permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/short-urls")
                 .permitAll()
