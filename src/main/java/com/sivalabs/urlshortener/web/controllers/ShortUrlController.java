@@ -36,7 +36,7 @@ class ShortUrlController {
 
     @GetMapping("/short-urls")
     PagedResult<ShortUrlDto> showShortUrls(@RequestParam(defaultValue = "1") int page) {
-        return shortUrlService.getPublicShortUrls(page, properties.getPageSize());
+        return shortUrlService.getPublicShortUrls(page, properties.pageSize());
     }
 
     @PostMapping("/short-urls")
@@ -57,7 +57,7 @@ class ShortUrlController {
     @SecurityRequirement(name = "Bearer")
     PagedResult<ShortUrlDto> myShortenedUrls(@RequestParam(defaultValue = "1") int page) {
         var currentUserId = securityUtils.getCurrentUserId();
-        return shortUrlService.getMyShortUrls(currentUserId, page, properties.getPageSize());
+        return shortUrlService.getMyShortUrls(currentUserId, page, properties.pageSize());
     }
 
     @DeleteMapping("/short-urls")

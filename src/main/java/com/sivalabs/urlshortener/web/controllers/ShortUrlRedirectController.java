@@ -25,6 +25,6 @@ class ShortUrlRedirectController {
         var optionalShortUrl = shortUrlService.accessShortUrl(shortKey, currentUserId);
         return optionalShortUrl
                 .map(shortUrlDto -> "redirect:" + shortUrlDto.originalUrl())
-                .orElse("redirect:"+ properties.getBaseUrl() +"/not-found");
+                .orElse("redirect:"+ properties.baseUrl() +"/not-found");
     }
 }

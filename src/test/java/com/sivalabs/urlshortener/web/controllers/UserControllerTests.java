@@ -5,10 +5,12 @@ import com.sivalabs.urlshortener.web.dtos.LoginResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Sql("/test-data.sql")
 class UserControllerTests extends BaseIT {
 
     @Test

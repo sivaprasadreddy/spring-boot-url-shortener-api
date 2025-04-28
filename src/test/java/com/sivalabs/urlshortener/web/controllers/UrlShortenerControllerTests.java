@@ -1,15 +1,28 @@
 package com.sivalabs.urlshortener.web.controllers;
 
 import com.sivalabs.urlshortener.BaseIT;
+import com.sivalabs.urlshortener.domain.entities.User;
+import com.sivalabs.urlshortener.domain.models.JwtToken;
+import com.sivalabs.urlshortener.domain.repositories.UserRepository;
+import com.sivalabs.urlshortener.domain.services.JwtTokenHelper;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Sql("/test-data.sql")
 class UrlShortenerControllerTests extends BaseIT {
+
+    @Autowired
+    JwtTokenHelper jwtTokenHelper;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Test
     void shouldGetPublicShortenedUrls() {
@@ -58,20 +71,20 @@ class UrlShortenerControllerTests extends BaseIT {
     }
 
     @Test
-    @WithMockUser
     void shouldShowMyUrlsPage() {
         MvcTestResult result = mockMvcTester.get()
                 .uri("/api/my-urls")
+                .header(HttpHeaders.AUTHORIZATION, getJwtTokenHeaderValue("siva@gmail.com"))
                 .exchange();
 
         assertThat(result).hasStatusOk();
     }
 
     @Test
-    @WithMockUser
     void shouldDeleteUrls() {
         MvcTestResult result = mockMvcTester.delete()
                 .uri("/api/short-urls")
+                .header(HttpHeaders.AUTHORIZATION, getJwtTokenHeaderValue("admin@gmail.com"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {
@@ -81,5 +94,11 @@ class UrlShortenerControllerTests extends BaseIT {
                 .exchange();
 
         assertThat(result).hasStatus(HttpStatus.OK);
+    }
+
+    private String getJwtTokenHeaderValue(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow();
+        JwtToken jwtToken = jwtTokenHelper.generateToken(user);
+        return "Bearer "+jwtToken.token();
     }
 }

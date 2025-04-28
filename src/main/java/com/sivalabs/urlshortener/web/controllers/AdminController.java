@@ -26,6 +26,6 @@ class AdminController {
 
     @GetMapping("/short-urls")
     PagedResult<ShortUrlDto> getAllShortUrls(@RequestParam(defaultValue = "1") int page) {
-        return shortUrlService.findAllShortUrls(page, properties.getPageSize());
+        return shortUrlService.findAllShortUrls(page, properties.pageSize());
     }
 }

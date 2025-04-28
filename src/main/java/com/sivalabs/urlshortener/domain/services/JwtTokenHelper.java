@@ -22,9 +22,9 @@ public class JwtTokenHelper {
 
     public JwtToken generateToken(User user) {
         Instant now = Instant.now();
-        Instant expiresAt = now.plusSeconds(properties.getJwt().getExpiresInSeconds());
+        Instant expiresAt = now.plusSeconds(properties.jwt().expiresInSeconds());
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer(properties.getJwt().getIssuer())
+                .issuer(properties.jwt().issuer())
                 .issuedAt(now)
                 .expiresAt(expiresAt)
                 .subject(user.getEmail())

@@ -8,7 +8,8 @@ import java.time.LocalDateTime;
 @Table(name = "short_urls")
 public class ShortUrl {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "short_urls_id_generator")
+    @SequenceGenerator(name = "short_urls_id_generator", sequenceName = "short_urls_id_seq", allocationSize = 1)
     private Long id;
 
     @Column(name = "short_key", nullable = false, unique = true)

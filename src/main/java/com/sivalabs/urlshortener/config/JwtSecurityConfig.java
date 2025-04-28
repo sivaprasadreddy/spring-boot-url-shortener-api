@@ -26,13 +26,13 @@ class JwtSecurityConfig {
 
     @Bean
     JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withPublicKey(properties.getJwt().getPublicKey()).build();
+        return NimbusJwtDecoder.withPublicKey(properties.jwt().publicKey()).build();
     }
 
     @Bean
     JwtEncoder jwtEncoder() {
-        JWK jwk = new RSAKey.Builder(properties.getJwt().getPublicKey())
-                .privateKey(properties.getJwt().getPrivateKey())
+        JWK jwk = new RSAKey.Builder(properties.jwt().publicKey())
+                .privateKey(properties.jwt().privateKey())
                 .build();
         JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
         return new NimbusJwtEncoder(jwks);

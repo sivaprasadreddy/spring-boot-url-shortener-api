@@ -38,7 +38,7 @@ public class ShortUrlService {
 
     @Transactional
     public ShortUrlDto createShortUrl(CreateShortUrlCmd cmd) {
-        if(properties.getValidateOriginalUrl()) {
+        if(properties.validateOriginalUrl()) {
             boolean urlExists = UrlExistenceValidator.isUrlExists(cmd.originalUrl());
             if(!urlExists) {
                 throw InvalidURLException.of(cmd.originalUrl());
@@ -61,7 +61,7 @@ public class ShortUrlService {
             shortUrl.setCreatedBy(user);
         } else {
             shortUrl.setPrivate(false);
-            shortUrl.setExpiresAt(LocalDateTime.now().plusDays(properties.getDefaultExpirationDays()));
+            shortUrl.setExpiresAt(LocalDateTime.now().plusDays(properties.defaultExpirationDays()));
         }
         shortUrlRepository.save(shortUrl);
         return entityMapper.toDto(shortUrl);

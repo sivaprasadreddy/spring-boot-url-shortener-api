@@ -3,6 +3,7 @@ package com.sivalabs.urlshortener;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.validation.annotation.Validated;
 
 import java.security.interfaces.RSAPrivateKey;
@@ -10,101 +11,31 @@ import java.security.interfaces.RSAPublicKey;
 
 @ConfigurationProperties(prefix = "app")
 @Validated
-public class ApplicationProperties {
+public record ApplicationProperties (
     @NotBlank
-    private String baseUrl = "http://localhost:4200";
+    @DefaultValue("http://localhost:4200")
+    String baseUrl,
     @Min(1)
     @Max(365)
-    private int defaultExpirationDays = 30;
-    private Boolean validateOriginalUrl = true;
+    @DefaultValue("30")
+    int defaultExpirationDays,
+    @DefaultValue("true")
+    Boolean validateOriginalUrl,
     @Min(5)
     @Max(100)
-    private int pageSize = 10;
-
+    @DefaultValue("10")
+    int pageSize,
     @Valid
-    private JwtProperties jwt = new JwtProperties();
+    JwtProperties jwt){
 
-    public String getBaseUrl() {
-        return baseUrl;
-    }
-
-    public void setBaseUrl(String baseUrl) {
-        this.baseUrl = baseUrl;
-    }
-
-    public int getDefaultExpirationDays() {
-        return defaultExpirationDays;
-    }
-
-    public void setDefaultExpirationDays(int defaultExpirationDays) {
-        this.defaultExpirationDays = defaultExpirationDays;
-    }
-
-    public Boolean getValidateOriginalUrl() {
-        return validateOriginalUrl;
-    }
-
-    public void setValidateOriginalUrl(Boolean validateOriginalUrl) {
-        this.validateOriginalUrl = validateOriginalUrl;
-    }
-
-    public int getPageSize() {
-        return pageSize;
-    }
-
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
-    }
-
-    public JwtProperties getJwt() {
-        return jwt;
-    }
-
-    public void setJwt(JwtProperties jwt) {
-        this.jwt = jwt;
-    }
-
-    public static class JwtProperties{
+    public record JwtProperties(
         @NotBlank
-        private String issuer;
+        String issuer,
         @NotNull
         @Positive
-        private Long expiresInSeconds;
+        Long expiresInSeconds,
         @NotNull
-        private RSAPublicKey publicKey;
+        RSAPublicKey publicKey,
         @NotNull
-        private RSAPrivateKey privateKey;
-
-        public String getIssuer() {
-            return issuer;
-        }
-
-        public void setIssuer(String issuer) {
-            this.issuer = issuer;
-        }
-
-        public Long getExpiresInSeconds() {
-            return expiresInSeconds;
-        }
-
-        public void setExpiresInSeconds(Long expiresInSeconds) {
-            this.expiresInSeconds = expiresInSeconds;
-        }
-
-        public RSAPublicKey getPublicKey() {
-            return publicKey;
-        }
-
-        public void setPublicKey(RSAPublicKey publicKey) {
-            this.publicKey = publicKey;
-        }
-
-        public RSAPrivateKey getPrivateKey() {
-            return privateKey;
-        }
-
-        public void setPrivateKey(RSAPrivateKey privateKey) {
-            this.privateKey = privateKey;
-        }
-    }
+        RSAPrivateKey privateKey){}
 }
