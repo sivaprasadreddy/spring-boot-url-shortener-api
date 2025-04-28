@@ -3,6 +3,8 @@ package com.sivalabs.urlshortener.web.controllers;
 import com.sivalabs.urlshortener.BaseIT;
 import com.sivalabs.urlshortener.domain.entities.User;
 import com.sivalabs.urlshortener.domain.models.JwtToken;
+import com.sivalabs.urlshortener.domain.models.PagedResult;
+import com.sivalabs.urlshortener.domain.models.ShortUrlDto;
 import com.sivalabs.urlshortener.domain.repositories.UserRepository;
 import com.sivalabs.urlshortener.domain.services.JwtTokenHelper;
 import org.junit.jupiter.api.Test;
@@ -30,7 +32,20 @@ class UrlShortenerControllerTests extends BaseIT {
                 .uri("/api/short-urls")
                 .exchange();
 
-        assertThat(result).hasStatusOk();
+        assertThat(result)
+                .hasStatusOk()
+                .bodyJson()
+                .convertTo(PagedResult.class)
+                .satisfies(pagedResult -> {
+                    assertThat(pagedResult.data()).hasSize(10);
+                    assertThat(pagedResult.totalElements()).isEqualTo(16);
+                    assertThat(pagedResult.pageNumber()).isEqualTo(1);
+                    assertThat(pagedResult.totalPages()).isEqualTo(2);
+                    assertThat(pagedResult.hasNext()).isTrue();
+                    assertThat(pagedResult.hasPrevious()).isFalse();
+                    assertThat(pagedResult.isFirst()).isTrue();
+                    assertThat(pagedResult.isLast()).isFalse();
+                });
     }
 
     @Test
@@ -45,7 +60,19 @@ class UrlShortenerControllerTests extends BaseIT {
                         """)
                 .exchange();
 
-        assertThat(result).hasStatus(HttpStatus.CREATED);
+        assertThat(result)
+                .hasStatus(HttpStatus.CREATED)
+                .bodyJson()
+                .convertTo(ShortUrlDto.class)
+                .satisfies(shortUrlDto -> {
+                    assertThat(shortUrlDto.id()).isNotNull();
+                    assertThat(shortUrlDto.shortKey()).isNotEmpty();
+                    assertThat(shortUrlDto.originalUrl()).isEqualTo("https://start.spring.io/");
+                    assertThat(shortUrlDto.isPrivate()).isFalse();
+                    assertThat(shortUrlDto.clickCount()).isEqualTo(0L);
+                    assertThat(shortUrlDto.createdAt()).isNotNull();
+                    assertThat(shortUrlDto.expiresAt()).isNotNull();
+                });
     }
 
     @Test
@@ -74,10 +101,24 @@ class UrlShortenerControllerTests extends BaseIT {
     void shouldShowMyUrlsPage() {
         MvcTestResult result = mockMvcTester.get()
                 .uri("/api/my-urls")
-                .header(HttpHeaders.AUTHORIZATION, getJwtTokenHeaderValue("siva@gmail.com"))
+                .header(HttpHeaders.AUTHORIZATION, getJwtTokenHeaderValue("admin@gmail.com"))
                 .exchange();
 
-        assertThat(result).hasStatusOk();
+        assertThat(result)
+                .hasStatusOk()
+                .bodyJson()
+                .convertTo(PagedResult.class)
+                .satisfies(pagedResult -> {
+                    assertThat(pagedResult.data()).hasSize(10);
+                    assertThat(pagedResult.totalElements()).isEqualTo(18);
+                    assertThat(pagedResult.pageNumber()).isEqualTo(1);
+                    assertThat(pagedResult.totalPages()).isEqualTo(2);
+                    assertThat(pagedResult.hasNext()).isTrue();
+                    assertThat(pagedResult.hasPrevious()).isFalse();
+                    assertThat(pagedResult.isFirst()).isTrue();
+                    assertThat(pagedResult.isLast()).isFalse();
+
+                });
     }
 
     @Test
