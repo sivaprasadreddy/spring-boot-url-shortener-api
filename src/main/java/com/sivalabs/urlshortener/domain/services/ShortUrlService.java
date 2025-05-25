@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.util.Set;
 
 @Service
-@Transactional(readOnly = true)
 public class ShortUrlService {
     private final ShortUrlRepository shortUrlRepository;
     private final UserRepository userRepository;
@@ -75,12 +74,14 @@ public class ShortUrlService {
         return shortKey;
     }
 
+    @Transactional(readOnly = true)
     public PagedResult<ShortUrlDto> findAllShortUrls(int page, int size) {
         Pageable pageable = getPageable(page, size);
         var shortUrlsPage =  shortUrlRepository.findAllShortUrls(pageable).map(entityMapper::toDto);
         return PagedResult.from(shortUrlsPage);
     }
 
+    @Transactional(readOnly = true)
     public PagedResult<ShortUrlDto> getPublicShortUrls(int page, int size) {
         Pageable pageable = getPageable(page, size);
         var shortUrlsPage = shortUrlRepository.findPublicShortUrls(pageable)
@@ -88,6 +89,7 @@ public class ShortUrlService {
         return PagedResult.from(shortUrlsPage);
     }
 
+    @Transactional(readOnly = true)
     public PagedResult<ShortUrlDto> getMyShortUrls(Long currentUserId, int page, int size) {
         Pageable pageable = getPageable(page, size);
         var shortUrlsPage = shortUrlRepository.findByCreatedById(currentUserId, pageable)

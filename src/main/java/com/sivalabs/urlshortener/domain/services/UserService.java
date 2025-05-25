@@ -36,6 +36,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
     public Optional<User> login(String email, String password) {
         return userRepository.findByEmail(email)
                 .filter(user -> passwordEncoder.matches(password, user.getPassword()));

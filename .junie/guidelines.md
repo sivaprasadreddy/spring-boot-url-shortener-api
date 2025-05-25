@@ -1,147 +1,77 @@
-# Developer Guidelines
+# Spring Boot Guidelines
 
-This document provides guidelines for developing a Spring Boot project. 
-It includes coding standards, Spring Boot best practices and testing recommendations to follow.
+## 1. Prefer Constructor Injection over Field/Setter Injection
+* Declare all the mandatory dependencies as `final` fields and inject them through the constructor.
+* Spring will auto-detect if there is only one constructor, no need to add `@Autowired` on the constructor.
+* Avoid field/setter injection in production code.
 
-### Prerequisites
-- Java 21 or later
-- Docker and Docker Compose
-- Maven (or use the included Maven wrapper)
+## 2. Prefer package-private over public for Spring components
+* Declare Controllers, their request-handling methods, `@Configuration` classes and `@Bean` methods with default (package-private) visibility whenever possible. There's no obligation to make everything `public`.
 
-### Project Structure
+## 3. Organize Configuration with Typed Properties
+* Group application-specific configuration properties with a common prefix in `application.properties` or `.yml`.
+* Bind them to `@ConfigurationProperties` classes with validation annotations so that the application will fail fast if the configuration is invalid.
+* Prefer environment variables instead of profiles for passing different configuration properties for different environments.
 
-Follow package-by-feature/module and in each module package-by-layer code organization style:
-
-```shell
-project-root/
-├── pom.xml
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── com/mycompany/projectname/
-│   │   │       ├── config/
-│   │   │       ├── module1/
-│   │   │       │     ├── api/
-│   │   │       │     │   ├── controllers/
-│   │   │       │     │   └── dtos/
-│   │   │       │     ├── config/
-│   │   │       │     ├── domain/
-│   │   │       │     │   ├── entities/
-│   │   │       │     │   ├── exceptions/
-│   │   │       │     │   ├── mappers/
-│   │   │       │     │   ├── models/
-│   │   │       │     │   ├── repositories/
-│   │   │       │     │   └── services/
-│   │   │       │     ├── jobs/
-│   │   │       │     ├── eventhandlers/
-│   │   └── resources/
-│   │       └── application.properties
-│   └── test/
-│   │   └── java/
-│   │   │   └── com/mycompany/projectname/
-│   │   │       ├── module1/
-│   │   │       │     ├── api/
-│   │   │       │     │   ├── controllers/
-│   │   │       │     ├── domain/
-│   │   │       │     │   └── services/
-└── README.md
-```
-
-1. **Web Layer** (`com.companyname.projectname.module.api`):
-   - Controllers handle HTTP requests and responses
-   - DTOs for request/response data
-   - Global exception handling
-
-2. **Service Layer** (`com.companyname.projectname.module.domain.services`):
-   - Business logic implementation
-   - Transaction management
-
-3. **Repository Layer** (`com.companyname.projectname.module.domain.repositories`):
-   - Spring Data JPA repositories
-   - Database access
-
-4. **Entity Layer** (`com.companyname.projectname.module.domain.entities`):
-   - JPA entities representing database tables
-
-5. **Model Layer** (`com.companyname.projectname.module.domain.models`):
-   - DTOs for domain objects
-   - Command objects for operations
-
-6. **Mapper Layer** (`com.companyname.projectname.module.domain.mappers`):
-   - Converters from DTOs to JPA entities and vice-versa
-
-7. **Exceptions** (`com.companyname.projectname.module.domain.exceptions`):
-   - Custom exceptions 
-
-8. **Config** (`com.companyname.projectname.module.config`):
-   - Spring Boot configuration classes such as WebMvcConfig, WebSecurityConfig, etc.
-
-### Java Code Style Guidelines
-
-1. **Java Code Style**:
-   - Use Java 21 features where appropriate (records, text blocks, pattern matching, etc.)
-   - Follow standard Java naming conventions
-   - Use meaningful variable and method names
-   - Use `public` access modifier only when necessary
-
-2. **Testing Style**:
-   - Use descriptive test method names
-   - Follow the Given-When-Then pattern
-   - Use AssertJ for assertions
-
-### Spring Boot Code Style Guidelines
-1. Dependency Injection Style
-   * Don't use Spring Field Injection in production code.
-   * Use Constructor Injection without adding `@Autowired`.
-
-2. Transactional Boundaries
-   * Annotate `@Service` classes with `@Transactional(readOnly=true)` to manage transactions declaratively.
-   * Annotate methods in `@Service` classes that perform write operations with `@Transactional`.
-   * Keep transactions as short as possible.
-
-3. Don't use JPA entities in the "web" layer
-   * Instead, create dedicated Request/Response objects as Java records.
-   * Use Jakarta Validation annotations on Request object.
-
-4. Create custom Spring Data JPA methods with meaningful method names using JPQL queries instead of using long derived query method names.
-
-5. Create usecase specific Command objects and pass them to the "service" layer methods to perform create or update operations.
-
-6. Application Configuration:
-   * Create all the application-specific configuration properties with a common prefix in `application.properties` file.
-   * Use Typed Configuration with `@ConfigurationProperties` with validations.
-
-7. Implement Global Exception Handling:
-   * `@ControllerAdvice`/`@RestControllerAdvice` with `@ExceptionHandler` methods.
-   * Return consistent error payloads (e.g. a standard `ErrorResponse` DTO).
-
-8. Logging:
-   * Never use `System.out.println()` for production logging. 
-   * Use SLF4J logging.
-
-9. Use WebJars for service static content.
-
-10. Don't use Lombok.
+## 4. Define Clear Transaction Boundaries
+* Define each Service-layer method as a transactional unit.
+* Annotate query-only methods with `@Transactional(readOnly = true)`.
+* Annotate data-modifying methods with `@Transactional`.
+* Limit the code inside each transaction to the smallest necessary scope.
 
 
-### Database Schema Management
-Use Flyway for database migrations:
+## 5. Disable Open Session in View Pattern
+* While using Spring Data JPA, disable the Open Session in View filter by setting ` spring.jpa.open-in-view=false` in `application.properties/yml.`
 
-- Migration scripts should be in `src/main/resources/db/migration`
-- Naming convention: `V{version}__{description}.sql`
-- Hibernate is configured with `ddl-auto=validate` to ensure schema matches entities
+## 6. Separate Web Layer from Persistence Layer
+* Don't expose entities directly as responses in controllers.
+* Define explicit request and response record (DTO) classes instead.
+* Apply Jakarta Validation annotations on your request records to enforce input rules.
 
-### Test Best Practices
-1. **Unit Tests**: Test individual components in isolation using mocks if required
-2. **Integration Tests**: Test interactions between components using Testcontainers
-3. **Use descriptive test names** that explain what the test is verifying
-4. **Follow the Given-When-Then pattern** for a clear test structure
-5. **Use AssertJ for assertions** for more readable assertions
-6. **Mock external dependencies** in unit tests
-7. **Use Testcontainers for integration tests** to test with real databases, message brokers, etc
-8. **TestcontainersConfiguration.java**: Configures database, message broker, etc containers for tests
-9. **BaseIT.java**: Base class for integration tests that sets up:
-   - Spring Boot test context using a random port
-   - MockMvcTester for HTTP requests
-   - Import `TestcontainersConfiguration.java`
+## 7. Follow REST API Design Principles
+* **Versioned, resource-oriented URLs:** Structure your endpoints as `/api/v{version}/resources` (e.g. `/api/v1/orders`).
+* **Consistent patterns for collections and sub-resources:** Keep URL conventions uniform (for example, `/posts` for posts collection and `/posts/{slug}/comments` for comments of a specific post).
+* **Explicit HTTP status codes via ResponseEntity:** Use `ResponseEntity<T>` to return the correct status (e.g. 200 OK, 201 Created, 404 Not Found) along with the response body.
+* Use pagination for collection resources that may contain an unbounded number of items.
+* The JSON payload must use a JSON object as a top-level data structure to allow for future extension.
+* Use snake_case or camelCase for JSON property names consistently.
 
+## 8. Use Command Objects for Business Operations
+* Create purpose-built command records (e.g., `CreateOrderCommand`) to wrap input data.
+* Accept these commands in your service methods to drive creation or update workflows.
+
+## 9. Centralize Exception Handling
+* Define a global handler class annotated with `@ControllerAdvice` (or `@RestControllerAdvice` for REST APIs) using `@ExceptionHandler` methods to handle specific exceptions.
+* Return consistent error responses. Consider using the ProblemDetails response format ([RFC 9457](https://www.rfc-editor.org/rfc/rfc9457)).
+
+## 10. Actuator
+* Expose only essential actuator endpoints (such as `/health`, `/info`, `/metrics`) without requiring authentication. All the other actuator endpoints must be secured.
+
+## 11. Internationalization with ResourceBundles
+* Externalize all user-facing text such as labels, prompts, and messages into ResourceBundles rather than embedding them in code.
+
+## 12. Use Testcontainers for integration tests
+* Spin up real services (databases, message brokers, etc.) in your integration tests to mirror production environments.
+
+## 13. Use random port for integration tests
+* When writing integration tests, start the application on a random available port to avoid port conflicts by annotating the test class with:
+
+    ```java
+    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+    ```
+
+## 14. Logging
+* **Use a proper logging framework.**  
+  Never use `System.out.println()` for application logging. Rely on SLF4J (or a compatible abstraction) and your chosen backend (Logback, Log4j2, etc.).
+
+* **Protect sensitive data.**  
+  Ensure that no credentials, personal information, or other confidential details ever appear in log output.
+
+* **Guard expensive log calls.**  
+  When building verbose messages at `DEBUG` or `TRACE` level, especially those involving method calls or complex string concatenations, wrap them in a level check or use suppliers:
+
+    ```java
+    if (logger.isDebugEnabled()) {
+        logger.debug("Detailed state: {}",computeExpensiveDetais());
+    }
+    ```
