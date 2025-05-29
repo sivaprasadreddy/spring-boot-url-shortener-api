@@ -30,3 +30,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Misc ###
+.claude/
+review.md
+improvements.md
+

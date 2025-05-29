@@ -1,6 +1,7 @@
 package com.sivalabs.urlshortener.domain.services;
 
 import com.sivalabs.urlshortener.domain.entities.User;
+import com.sivalabs.urlshortener.domain.exceptions.EmailAlreadyExistsException;
 import com.sivalabs.urlshortener.domain.models.CreateUserCmd;
 import com.sivalabs.urlshortener.domain.repositories.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,7 +26,7 @@ public class UserService {
     @Transactional
     public void createUser(CreateUserCmd cmd) {
         if (userRepository.existsByEmail(cmd.email())) {
-            throw new RuntimeException("Email already exists");
+            throw new EmailAlreadyExistsException("Email already exists");
         }
         var user = new User();
         user.setEmail(cmd.email());
