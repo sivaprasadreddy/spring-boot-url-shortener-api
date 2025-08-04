@@ -1,6 +1,7 @@
 package com.sivalabs.urlshortener.web.utils;
 
 import com.sivalabs.urlshortener.domain.entities.User;
+import com.sivalabs.urlshortener.domain.models.Role;
 import com.sivalabs.urlshortener.domain.repositories.UserRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -42,6 +43,14 @@ public class SecurityUtils {
             return userRepository.findById(userId).orElse(null);
         }
         return null;
+    }
+
+    public boolean isCurrentUserAdmin() {
+        User currentUser = getCurrentUser();
+        if (currentUser == null) {
+            return false;
+        }
+        return currentUser.getRole() == Role.ROLE_ADMIN;
     }
 
 }

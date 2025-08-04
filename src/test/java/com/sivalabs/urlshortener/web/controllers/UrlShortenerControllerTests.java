@@ -89,7 +89,7 @@ class UrlShortenerControllerTests extends BaseIT {
 
         assertThat(result)
                 .hasStatus(HttpStatus.FOUND)
-                .hasViewName("redirect:https://www.docker.com");
+                .headers().hasValue("Location", "https://www.docker.com");
     }
 
     @Test
@@ -100,7 +100,7 @@ class UrlShortenerControllerTests extends BaseIT {
 
         assertThat(result)
                 .hasStatus(HttpStatus.FOUND)
-                .hasViewName("redirect:http://localhost:4200/not-found");
+                .headers().hasValue("Location", "http://localhost:4200/not-found");
     }
 
     @Test
@@ -125,22 +125,6 @@ class UrlShortenerControllerTests extends BaseIT {
                     assertThat(pagedResult.isLast()).isFalse();
 
                 });
-    }
-
-    @Test
-    void shouldDeleteUrls() {
-        MvcTestResult result = mockMvcTester.delete()
-                .uri("/api/short-urls")
-                .header(HttpHeaders.AUTHORIZATION, getJwtTokenHeaderValue("admin@gmail.com"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {
-                        "ids": [1, 2, 3]
-                        }
-                        """)
-                .exchange();
-
-        assertThat(result).hasStatus(HttpStatus.OK);
     }
 
     @Test
@@ -263,7 +247,7 @@ class UrlShortenerControllerTests extends BaseIT {
 
         assertThat(result)
                 .hasStatus(HttpStatus.FOUND)
-                .hasViewName("redirect:https://spring.io");
+                .headers().hasValue("Location", "https://spring.io");
     }
 
 
@@ -277,16 +261,60 @@ class UrlShortenerControllerTests extends BaseIT {
 
         assertThat(result)
                 .hasStatus(HttpStatus.FOUND)
-                .hasViewName("redirect:http://localhost:4200/not-found");
+                .headers().hasValue("Location", "http://localhost:4200/not-found");
     }
 
     @Test
-    void shouldNotDeleteUrlsOfOtherUsers() {
+    void adminShouldBeAbleToDeleteUrlsOfOwnAndOthers() {
+        MvcTestResult result = mockMvcTester.delete()
+                .uri("/api/short-urls")
+                .header(HttpHeaders.AUTHORIZATION, getJwtTokenHeaderValue("admin@gmail.com"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                        "ids": [1, 5]
+                        }
+                        """)
+                .exchange();
+
+        assertThat(result).hasStatus(HttpStatus.OK);
+        assertThat(shortUrlRepository.existsById(1L)).isFalse();
+        assertThat(shortUrlRepository.existsById(5L)).isFalse();
+    }
+
+    @Test
+    void normalUserShouldBeAbleToDeleteOwnUrls() {
+        // First, let's verify that the URLs we want to test with exist
+        // These should be URLs created by siva (user ID 2)
+        assertThat(shortUrlRepository.existsById(5L)).isTrue();
+        assertThat(shortUrlRepository.existsById(6L)).isTrue();
+
+        // Try to delete URLs as siva (user ID 2)
+        MvcTestResult result = mockMvcTester.delete()
+                .uri("/api/short-urls")
+                .header(HttpHeaders.AUTHORIZATION, getJwtTokenHeaderValue("siva@gmail.com"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                        "ids": [5, 6]
+                        }
+                        """)
+                .exchange();
+
+        assertThat(result).hasStatus(HttpStatus.OK);
+
+        // Verify the URLs are deleted
+        assertThat(shortUrlRepository.existsById(5L)).isFalse();
+        assertThat(shortUrlRepository.existsById(6L)).isFalse();
+    }
+
+    @Test
+    void normalUsersShouldNotDeleteUrlsOfOtherUsers() {
         // First, let's verify that the URLs we want to test with exist
         // These should be URLs created by admin (user ID 1)
-        assertThat(shortUrlRepository.existsById(100L)).isTrue();
-        assertThat(shortUrlRepository.existsById(101L)).isTrue();
-        assertThat(shortUrlRepository.existsById(102L)).isTrue();
+        assertThat(shortUrlRepository.existsById(1L)).isTrue();
+        assertThat(shortUrlRepository.existsById(2L)).isTrue();
+        assertThat(shortUrlRepository.existsById(3L)).isTrue();
 
         // Try to delete URLs created by admin (user ID 1) as siva (user ID 2)
         MvcTestResult result = mockMvcTester.delete()
@@ -295,17 +323,17 @@ class UrlShortenerControllerTests extends BaseIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {
-                        "ids": [100, 101, 102]
+                        "ids": [1, 2, 3]
                         }
                         """)
                 .exchange();
 
-        assertThat(result).hasStatus(HttpStatus.OK);
+        assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
 
         // Verify the URLs still exist
-        assertThat(shortUrlRepository.existsById(100L)).isTrue();
-        assertThat(shortUrlRepository.existsById(101L)).isTrue();
-        assertThat(shortUrlRepository.existsById(102L)).isTrue();
+        assertThat(shortUrlRepository.existsById(1L)).isTrue();
+        assertThat(shortUrlRepository.existsById(2L)).isTrue();
+        assertThat(shortUrlRepository.existsById(3L)).isTrue();
     }
 
     @Test
@@ -346,7 +374,7 @@ class UrlShortenerControllerTests extends BaseIT {
 
         assertThat(result)
                 .hasStatus(HttpStatus.FOUND)
-                .hasViewName("redirect:http://localhost:4200/not-found");
+                .headers().hasValue("Location", "http://localhost:4200/not-found");
     }
 
     private String getJwtTokenHeaderValue(String email) {

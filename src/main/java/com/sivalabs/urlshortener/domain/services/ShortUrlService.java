@@ -13,6 +13,7 @@ import com.sivalabs.urlshortener.domain.repositories.UserRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -128,7 +129,17 @@ public class ShortUrlService {
     @Transactional
     public void deleteUserShortUrls(Set<Long> ids, Long userId) {
         if (ids != null && !ids.isEmpty() && userId != null) {
-            shortUrlRepository.deleteByIdInAndCreatedById(ids, userId);
+            long count = shortUrlRepository.deleteByIdInAndCreatedById(ids, userId);
+            if(count != ids.size()) {
+                throw new AccessDeniedException("You don't have permission to delete the given short urls");
+            }
+        }
+    }
+
+    @Transactional
+    public void deleteUserShortUrls(Set<Long> ids) {
+        if (ids != null && !ids.isEmpty()) {
+            shortUrlRepository.deleteAllByIdInBatch(ids);
         }
     }
 }

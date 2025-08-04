@@ -1,11 +1,16 @@
 package com.sivalabs.urlshortener.web.controllers;
 
 import com.sivalabs.urlshortener.ApplicationProperties;
+import com.sivalabs.urlshortener.domain.models.ShortUrlDto;
 import com.sivalabs.urlshortener.domain.services.ShortUrlService;
 import com.sivalabs.urlshortener.web.utils.SecurityUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+
+import java.net.URI;
 
 @Controller
 class ShortUrlRedirectController {
@@ -20,11 +25,10 @@ class ShortUrlRedirectController {
     }
 
     @GetMapping("/s/{shortKey}")
-    String redirectToOriginalUrl(@PathVariable String shortKey) {
+    ResponseEntity<Void> redirectToOriginalUrl(@PathVariable String shortKey) {
         var currentUserId = securityUtils.getCurrentUserId();
         var optionalShortUrl = shortUrlService.accessShortUrl(shortKey, currentUserId);
-        return optionalShortUrl
-                .map(shortUrlDto -> "redirect:" + shortUrlDto.originalUrl())
-                .orElse("redirect:"+ properties.baseUrl() +"/not-found");
+        var redirectUrl = optionalShortUrl.map(ShortUrlDto::originalUrl).orElse(properties.baseUrl() +"/not-found");
+        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(redirectUrl)).build();
     }
 }

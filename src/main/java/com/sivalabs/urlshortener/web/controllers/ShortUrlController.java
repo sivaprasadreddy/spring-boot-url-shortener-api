@@ -68,8 +68,13 @@ class ShortUrlController {
             log.info("No short_url ids selected for deletion");
             return;
         }
-        var currentUserId = securityUtils.getCurrentUserId();
-        shortUrlService.deleteUserShortUrls(ids, currentUserId);
+        boolean isAdmin = securityUtils.isCurrentUserAdmin();
+        if (isAdmin) {
+            shortUrlService.deleteUserShortUrls(ids);
+        } else {
+            var currentUserId = securityUtils.getCurrentUserId();
+            shortUrlService.deleteUserShortUrls(ids, currentUserId);
+        }
     }
 
     record DeleteRequest(Set<Long> ids) {}
