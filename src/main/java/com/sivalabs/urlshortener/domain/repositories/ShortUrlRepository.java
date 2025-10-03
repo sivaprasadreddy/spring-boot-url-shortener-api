@@ -4,6 +4,7 @@ import com.sivalabs.urlshortener.domain.entities.ShortUrl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.Collection;
@@ -23,5 +24,7 @@ public interface ShortUrlRepository extends JpaRepository<ShortUrl, Long> {
     @Query("select u from ShortUrl u left join fetch u.createdBy")
     Page<ShortUrl> findAllShortUrls(Pageable pageable);
 
-    long deleteByIdInAndCreatedById(Collection<Long> ids, Long userId);
+    @Modifying
+    @Query("delete from ShortUrl u where u.id in :ids and u.createdBy.id = :userId")
+    int deleteByIdInAndCreatedById(Collection<Long> ids, Long userId);
 }

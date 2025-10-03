@@ -129,7 +129,7 @@ public class ShortUrlService {
     @Transactional
     public void deleteUserShortUrls(Set<Long> ids, Long userId) {
         if (ids != null && !ids.isEmpty() && userId != null) {
-            long count = shortUrlRepository.deleteByIdInAndCreatedById(ids, userId);
+            int count = shortUrlRepository.deleteByIdInAndCreatedById(ids, userId);
             if(count != ids.size()) {
                 throw new AccessDeniedException("You don't have permission to delete the given short urls");
             }

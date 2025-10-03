@@ -41,7 +41,7 @@ jobs:
             ./mvnw spring-boot:build-image \
             -Dspring-boot.build-image.imageName=docker.io/${{ secrets.DOCKER_USERNAME }}/spring-boot-url-shortener-api:amd64 \
             -Dspring-boot.build-image.publish=true \
-            -Dspring-boot.build-image.imagePlatform=linux/amd64
+            -Dspring-boot.build-image.imagePlatform=linux/amd64 -DskipTests=true
 
       # Build arm64 image
       - name: Build arm64 image
@@ -49,7 +49,7 @@ jobs:
             ./mvnw spring-boot:build-image \
               -Dspring-boot.build-image.imageName=docker.io/${{ secrets.DOCKER_USERNAME }}/spring-boot-url-shortener-api:arm64 \
               -Dspring-boot.build-image.publish=true \
-              -Dspring-boot.build-image.imagePlatform=linux/arm64
+              -Dspring-boot.build-image.imagePlatform=linux/arm64 -DskipTests=true
 
       # Merge them into multi-arch manifest
       - name: Create multi-arch manifest
@@ -58,4 +58,3 @@ jobs:
               -t docker.io/${{ secrets.DOCKER_USERNAME }}/spring-boot-url-shortener-api:latest \
               docker.io/${{ secrets.DOCKER_USERNAME }}/spring-boot-url-shortener-api:amd64 \
               docker.io/${{ secrets.DOCKER_USERNAME }}/spring-boot-url-shortener-api:arm64
-            docker manifest push docker.io/${{ secrets.DOCKER_USERNAME }}/spring-boot-url-shortener-api:latest
