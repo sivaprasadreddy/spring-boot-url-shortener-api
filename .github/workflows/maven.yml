@@ -8,10 +8,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      # Setup QEMU (for arm emulation on amd64 runner)
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # Setup Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 24
           distribution: 'temurin'
@@ -19,3 +27,34 @@ jobs:
 
       - name: Build with Maven
         run: ./mvnw -ntp verify
+
+      # Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Build amd64 image
+      - name: Build amd64 image
+        run: |
+            ./mvnw spring-boot:build-image \
+            -Dspring-boot.build-image.imageName=docker.io/${{ secrets.DOCKER_USERNAME }}/spring-boot-url-shortener-api:amd64 \
+            -Dspring-boot.build-image.publish=true \
+            -Dspring-boot.build-image.platform=linux/amd64
+
+      # Build arm64 image
+      - name: Build arm64 image
+        run: |
+            ./mvnw spring-boot:build-image \
+              -Dspring-boot.build-image.imageName=docker.io/${{ secrets.DOCKER_USERNAME }}/spring-boot-url-shortener-api:arm64 \
+              -Dspring-boot.build-image.publish=true \
+              -Dspring-boot.build-image.platform=linux/arm64
+
+      # Merge them into multi-arch manifest
+      - name: Create multi-arch manifest
+        run: |
+            docker buildx imagetools create \
+              -t docker.io/${{ secrets.DOCKER_USERNAME }}/spring-boot-url-shortener-api:latest \
+              docker.io/${{ secrets.DOCKER_USERNAME }}/spring-boot-url-shortener-api:amd64 \
+              docker.io/${{ secrets.DOCKER_USERNAME }}/spring-boot-url-shortener-api:arm64
