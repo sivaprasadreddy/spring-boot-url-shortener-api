@@ -16,7 +16,7 @@
     <name>spring-boot-url-shortener-api</name>
 
     <properties>
-        <java.version>24</java.version>
+        <java.version>25</java.version>
         <springdoc-openapi.version>2.8.13</springdoc-openapi.version>
     </properties>
 
