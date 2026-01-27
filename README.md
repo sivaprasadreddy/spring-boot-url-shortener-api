@@ -18,7 +18,7 @@ A REST API for URL shortening service built with Spring Boot.
 ## Getting Started
 
 ### Prerequisites
-- Java 24
+- Java 25
 - Docker and Docker Compose
 
 ### Generating certs
