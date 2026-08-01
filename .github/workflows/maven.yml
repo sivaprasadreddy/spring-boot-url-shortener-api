@@ -12,7 +12,7 @@ jobs:
 
       # Setup QEMU (for arm emulation on amd64 runner)
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       # Setup Buildx
       - name: Set up Docker Buildx
